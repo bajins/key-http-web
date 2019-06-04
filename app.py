@@ -107,7 +107,7 @@ class ThreadingHttpServer(socketserver.ThreadingMixIn, HTTPServer):
 def main(port):
     httpd = ThreadingHttpServer(('', port), LearningHTTPRequestHandler)
     print('启动服务成功 http://' + get_host_ip() + ":%d" % port)
-    print('按 Ctrl + C to 结束...')
+    print('按 Ctrl + C 结束...')
     httpd.serve_forever()
 
 
@@ -143,7 +143,7 @@ def check_version():
     v = sys.version_info
     if v.major == 3 and v.minor >= 5:
         return
-    print('Your current python is %d.%d. Please use Python 3.6.' % (v.major, v.minor))
+    print('你当前安装的Python是%d.%d.%d，请使用Python3.6及以上版本' % (v.major, v.minor, v.micro))
     exit(1)
 
 
