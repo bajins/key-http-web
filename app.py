@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os, sys, subprocess, json, socketserver
+import socket
+import string
 from urllib import parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
 # import xshellkey as xshellkey  # 导入包下的模块并取别名
@@ -102,9 +104,9 @@ class ThreadingHttpServer(socketserver.ThreadingMixIn, HTTPServer):
     pass
 
 
-def main(PORT):
-    httpd = ThreadingHttpServer(('', PORT), LearningHTTPRequestHandler)
-    print('启动服务成功，端口：%d' % PORT)
+def main(port):
+    httpd = ThreadingHttpServer(('', port), LearningHTTPRequestHandler)
+    print('启动服务成功 http://' + get_host_ip() + ":%d" % port)
     print('按 Ctrl + C to 结束...')
     httpd.serve_forever()
 
@@ -121,6 +123,21 @@ def decode(s):
         return s.decode('gbk')
 
 
+def get_host_ip():
+    """
+    查询本机ip地址
+    :return: ip
+    """
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+    finally:
+        s.close()
+
+    return ip
+
+
 # check #######################################################################
 def check_version():
     v = sys.version_info
@@ -130,6 +147,13 @@ def check_version():
     exit(1)
 
 
+def argvs():
+    if len(sys.argv) < 2:
+        return 3000
+    # return string.atoi(sys.argv[1])
+    return int(sys.argv[1])
+
+
 if __name__ == '__main__':
     check_version()
-    main(39093)
+    main(argvs())
