@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import imghdr
 import os, sys, subprocess, json, socketserver
 import socket
 import string
@@ -8,6 +8,7 @@ from urllib import parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
 # import xshellkey as xshellkey  # 导入包下的模块并取别名
 from xshellkey import generateKey  # 指定导入包下的函数
+from contenttype import judgeType  # 指定导入包下的函数
 
 # 获取到当前执行文件目录
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -26,8 +27,8 @@ def getStatic(file):
         length = file.find("?")
 
     filename = os.path.join(BASE_DIR, os.path.normcase(file[1:length]))
-
-    with open(filename, 'r', encoding='utf-8', errors='ignore') as fd:
+    # with open(filename, 'rb', encoding='utf-8', errors='ignore') as fd:
+    with open(filename, 'rb') as fd:
         data = fd.read()
     return data
 
@@ -56,8 +57,11 @@ class LearningHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         # self.close_connection = True
-
-        self._sendHttpHeader(self.headers["Accept"].split(",")[0] + ';charset=utf-8')
+        accept = self.headers["Accept"].split(";")[0]
+        if accept.find("image") != -1:
+            self._sendHttpHeader(judgeType(self.path) + ';charset=utf-8')
+        else:
+            self._sendHttpHeader(self.headers["Accept"].split(",")[0] + ';charset=utf-8')
 
         if self.path == '/':
             self._sendHttpBody(getHtml("index.html"))
