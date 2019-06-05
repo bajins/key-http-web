@@ -7,21 +7,21 @@ import string
 from urllib import parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
 # import xshellkey as xshellkey  # 导入包下的模块并取别名
-from xshellkey import generateKey  # 指定导入包下的函数
-from contenttype import judgeType  # 指定导入包下的函数
+from xshellkey import generate_key  # 指定导入包下的函数
+from contenttype import judge_type  # 指定导入包下的函数
 
 # 获取到当前执行文件目录
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def getHtml(html):
+def get_html(html):
     filename = os.path.join(BASE_DIR, "templates", html)
     with open(filename, 'r', encoding='utf-8', errors='ignore') as fd:
         data = fd.read()
     return data
 
 
-def getStatic(file):
+def get_static(file):
     length = len(file)
     if file.find("?") != -1:
         length = file.find("?")
@@ -34,7 +34,7 @@ def getStatic(file):
 
 
 class LearningHTTPRequestHandler(BaseHTTPRequestHandler):
-    def _sendHttpHeader(self, contentType='application/json;charset=utf-8'):
+    def send_http_header(self, contentType='application/json;charset=utf-8'):
         origin = self.headers['Origin']
         self.send_response(200)
         self.send_header('Content-Type', contentType)
@@ -43,8 +43,7 @@ class LearningHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Max-Age', '86400')
         self.end_headers()
 
-    def _sendHttpBody(self, data):
-        body = b''
+    def send_http_body(self, data):
         # 判断是否为bytes
         if isinstance(data, bytes):
             body = data
@@ -55,53 +54,53 @@ class LearningHTTPRequestHandler(BaseHTTPRequestHandler):
             body = json.dumps(data, ensure_ascii=False).encode('utf-8', errors='ignore')
         self.wfile.write(body)
 
-    def do_GET(self):
+    def do_get(self):
         # self.close_connection = True
         accept = self.headers["Accept"].split(";")[0]
         if accept.find("image") != -1:
-            self._sendHttpHeader(judgeType(self.path) + ';charset=utf-8')
+            self.send_http_header(judge_type(self.path) + ';charset=utf-8')
         else:
-            self._sendHttpHeader(self.headers["Accept"].split(",")[0] + ';charset=utf-8')
+            self.send_http_header(self.headers["Accept"].split(",")[0] + ';charset=utf-8')
 
         if self.path == '/':
-            self._sendHttpBody(getHtml("index.html"))
+            self.send_http_body(get_html("index.html"))
 
         elif self.path != "/" and self.path.find("static") != -1:
-            self._sendHttpBody(getStatic(self.path))
+            self.send_http_body(get_static(self.path))
 
         else:
             return self.send_error(404)
 
-    def do_POST(self):
+    def do_post(self):
         # self.close_connection = True
 
         if self.path != '/getKey':
             # return self.send_error(400)
-            return self._sendHttpBody({'code': 400, 'msg': "请求路径不存在"})
+            return self.send_http_body({'code': 400, 'msg': "请求路径不存在"})
 
         body = self.rfile.read(int(self.headers['Content-length']))
         qs = parse.parse_qs(body.decode('utf-8'))
 
-        self._sendHttpHeader()
+        self.send_http_header()
 
         if 'app' not in qs.keys():
-            return self._sendHttpBody({'code': 300, 'msg': "请选择产品"})
+            return self.send_http_body({'code': 300, 'msg': "请选择产品"})
         if 'version' not in qs.keys():
-            return self._sendHttpBody({'code': 300, 'msg': "请选择版本"})
+            return self.send_http_body({'code': 300, 'msg': "请选择版本"})
 
         product = qs['app'][0]
         version = qs['version'][0]
 
         try:
-            self._sendHttpBody({'code': 200, 'msg': "请求成功", 'key': generateKey(product, version)})
+            self.send_http_body({'code': 200, 'msg': "请求成功", 'key': generate_key(product, version)})
         except ValueError as e:
-            self._sendHttpBody({'code': 500, 'msg': decode(e.output)})
+            self.send_http_body({'code': 500, 'msg': decode(e.output)})
         except subprocess.CalledProcessError as e:
-            self._sendHttpBody({'code': 500, 'msg': decode(e.output)})
+            self.send_http_body({'code': 500, 'msg': decode(e.output)})
         except subprocess.TimeoutExpired as e:
-            self._sendHttpBody({'code': 500, 'msg': decode(e.output)})
+            self.send_http_body({'code': 500, 'msg': decode(e.output)})
         except subprocess.CalledProcessError as e:
-            self._sendHttpBody({'code': 500, 'msg': decode(e.output)})
+            self.send_http_body({'code': 500, 'msg': decode(e.output)})
 
 
 class ThreadingHttpServer(socketserver.ThreadingMixIn, HTTPServer):

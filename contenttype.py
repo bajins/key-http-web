@@ -1,7 +1,7 @@
 import os
 
 
-def getContentType(ext):
+def get_content_type(ext):
     """
     根据文件后缀设置 content type
 
@@ -636,6 +636,6 @@ def getContentType(ext):
         return "application/octet-stream"
 
 
-def judgeType(file):
+def judge_type(file):
     suffix = os.path.splitext(file)[-1]
-    return getContentType(suffix)
+    return get_content_type(suffix)
