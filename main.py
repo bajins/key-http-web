@@ -1,5 +1,8 @@
 import json
 
+from utils import util
+from utils.moba_xterm_Keygen import GenerateLicense, LicenseType
+from utils.reg_workshop_keygen import GenLicenseCode
 from utils.xshell_key import generate_key
 
 # 路由：key为url，value为类.函数
@@ -41,14 +44,26 @@ def get_key(request):
     if request.Method != 'POST':
         return json.dumps({'code': 401, 'msg': "请求方式错误"})
 
+    company = request.request_data.get('company', "")
+    if util.is_empty(company):
+        return json.dumps({'code': 300, 'msg': "请选择公司"})
+
     app = request.request_data.get('app', "")
-    if app.strip() == '':
+    if util.is_empty(app):
         return json.dumps({'code': 300, 'msg': "请选择产品"})
 
     version = request.request_data.get('version', "")
-    if version.strip() == '':
+    if util.is_empty(version):
         return json.dumps({'code': 300, 'msg': "请选择版本"})
 
-    key = generate_key(app.replace("+", " "), version)
+    if company == "netsarang":
+        key = generate_key(app.replace("+", " "), version)
+    elif company == "mobatek":
+        MajorVersion, MinorVersion = version.split('.')[0:2]
+        GenerateLicense(LicenseType.Professional, 1, "woytu", int(MajorVersion), int(MinorVersion))
+        return "/Custom.mxtpro"
+    elif company == "torchsoft":
+        key = GenLicenseCode("woytu", int(version))
+
     # 返回给用户  模版中使用到的users就是这里传递进去的
     return json.dumps({'code': 200, 'msg': "请求成功", 'key': key})
