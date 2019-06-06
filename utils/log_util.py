@@ -3,6 +3,8 @@ import sys
 import time
 from http import HTTPStatus
 
+from utils import util
+
 
 def date_time_string(timestamp=None):
     """Return the current date and time formatted for a message header."""
@@ -11,12 +13,11 @@ def date_time_string(timestamp=None):
     return email.utils.formatdate(timestamp, usegmt=True)
 
 
-def log_date_time_string(self):
+def log_date_time_string():
     """Return the current time formatted for logging."""
     now = time.time()
     year, month, day, hh, mm, ss, x, y, z = time.localtime(now)
-    s = "%02d/%3s/%04d %02d:%02d:%02d" % (
-        day, self.monthname[month], year, hh, mm, ss)
+    s = "%02d/%3s/%04d %02d:%02d:%02d" % (day, monthname[month], year, hh, mm, ss)
     return s
 
 
@@ -27,13 +28,13 @@ monthname = [None,
              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 
-def address_string(self):
+def address_string(request):
     """Return the client address."""
 
-    return self.client_address[0]
+    return request.client_address[0]
 
 
-def log_request(self, code='-', size='-'):
+def log_request(request_line, code='-', size='-'):
     """Log an accepted request.
 
     This is called by send_response().
@@ -41,11 +42,10 @@ def log_request(self, code='-', size='-'):
     """
     if isinstance(code, HTTPStatus):
         code = code.value
-    self.log_message('"%s" %s %s',
-                     self.requestline, str(code), str(size))
+    log_message('"%s" %s %s', request_line, str(code), str(size))
 
 
-def log_error(self, format, *args):
+def log_error(format, *args):
     """Log an error.
 
     This is called when a request cannot be fulfilled.  By
@@ -57,10 +57,10 @@ def log_error(self, format, *args):
 
     """
 
-    self.log_message(format, *args)
+    log_message(format, *args)
 
 
-def log_message(self, format, *args):
+def log_message(format, *args):
     """Log an arbitrary message.
 
     This is used by all other logging functions.  Override
@@ -77,7 +77,4 @@ def log_message(self, format, *args):
 
     """
 
-    sys.stderr.write("%s - - [%s] %s\n" %
-                     (self.address_string(),
-                      self.log_date_time_string(),
-                      format % args))
+    sys.stderr.write("%s - - [%s] %s\n" % (util.get_host_ip(), log_date_time_string(), format % args))

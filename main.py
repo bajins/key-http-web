@@ -1,6 +1,6 @@
 import json
 
-from xshell_key import generate_key
+from utils.xshell_key import generate_key
 
 urlpatterns = {"": "main.index", "/": "main.index", "/login": "main.login", "/login-page": "main.login_page",
                "/getKey": "main.get_key"}
