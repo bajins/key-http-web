@@ -95,7 +95,7 @@ def GenerateLicense(Type: LicenseType, Count: int, UserName: str, MajorVersion: 
                                                           # No Games flag. 0 means "NoGames = false". But it does not work.
                                                           0)  # No Plugins flag. 0 means "NoPlugins = false". But it does not work.
     EncodedLicenseString = VariantBase64Encode(EncryptBytes(0x787, LicenseString.encode())).decode()
-    with zipfile.ZipFile('Custom.mxtpro', 'w') as f:
+    with zipfile.ZipFile('static/Custom.mxtpro', 'w') as f:
         f.writestr('Pro.key', data=EncodedLicenseString)
 
 
