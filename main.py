@@ -2,6 +2,7 @@ import json
 
 from utils.xshell_key import generate_key
 
+# 路由：key为url，value为类.函数
 urlpatterns = {"": "main.index", "/": "main.index", "/login": "main.login", "/login-page": "main.login_page",
                "/getKey": "main.get_key"}
 
