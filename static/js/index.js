@@ -78,6 +78,7 @@ function getKey() {
             type: "POST",
             data: {company: company, app: app, version: version},
             contentType: "text",
+            responseType: "blob",
             success: function (result, status, xhr) {
                 // console.log(xhr.getAllResponseHeaders());
                 // 从response的headers中获取filename, 后端response.setHeader("Content-Disposition", "attachment; filename=xxxx.xxx") 设置的文件名;
