@@ -1,3 +1,4 @@
+import mimetypes
 import os
 
 
@@ -639,3 +640,8 @@ def get_content_type(ext):
 def judge_type(file):
     suffix = os.path.splitext(file)[-1]
     return get_content_type(suffix)
+
+
+def get_mime_type(file_path):
+    """  根据系统API获取Content-Type，没有查询到会返回None """
+    return mimetypes.guess_type(file_path)[0]
