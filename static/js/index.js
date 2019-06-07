@@ -64,34 +64,44 @@ function getKey() {
     let app = $("#app").val();
     let version = $("#version").val();
     if (app == "MobaXterm") {
+        // 构造隐藏的form表单
+        /*let form = $('<form action="/getKey" method="post">' +
+            '<input type="text" name="company" value="' + company + '"/>' +
+            '<input type="text" name="app" value="' + app + '"/>' +
+            '<input type="text" name="version" value="' + version + '"/>' +
+            '</form>');
+        $(document.body).append(form);
+        form.submit().remove();*/
+
         $.ajax({
             url: "/getKey",
             type: "POST",
             data: {company: company, app: app, version: version},
-            dataType: "blob",
-            success: function (result) {
-                //这里res.data是返回的blob对象
-                let blob = new Blob([result.data], {type: 'application/actet-stream;charset=utf-8'});
-
-                //从response的headers中获取filename, 后端response.setHeader("Content-Disposition", "attachment; filename=xxxx.xxx") 设置的文件名;
-                let contentDisposition = result.headers['Content-Disposition'];
+            contentType: "text",
+            success: function (result, status, xhr) {
+                // console.log(xhr.getAllResponseHeaders());
+                // 从response的headers中获取filename, 后端response.setHeader("Content-Disposition", "attachment; filename=xxxx.xxx") 设置的文件名;
+                let contentDisposition = xhr.getResponseHeader('Content-Disposition');
                 let patt = new RegExp("filename=([^;]+\\.[^\\.;]+);*");
                 let filename = "";
                 // 如果从Content-Disposition中取到的文件名为空
-                if (util.isEmpty(contentDisposition)) {
-                    let f = result.config.params.filePath.split("/");
+                if (isEmpty(contentDisposition)) {
+                    let f = xhr.config.params.filePath.split("/");
                     filename = f[f.length - 1];
                 } else {
                     filename = patt.exec(contentDisposition)[1];
                 }
                 // 取文件名信息中的文件名,替换掉文件名中多余的符号
-                filename = util.replace(filename, "\\\\", "", true);
-                filename = util.replace(filename, "/", "", true);
+                filename = replace(filename, "\\\\", "", true);
+                filename = replace(filename, "/", "", true);
+
                 let downloadElement = document.createElement('a');
+                downloadElement.style.display = 'none';
+
+                //这里res.data是返回的blob对象
+                let blob = new Blob([result], {type: 'application/octet-stream;charset=utf-8'});
                 // 创建下载的链接
                 let href = window.URL.createObjectURL(blob);
-
-                downloadElement.style.display = 'none';
                 downloadElement.href = href;
                 // 下载后文件名
                 downloadElement.download = filename;

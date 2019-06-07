@@ -95,36 +95,5 @@ def GenerateLicense(Type: LicenseType, Count: int, UserName: str, MajorVersion: 
                                                           # No Games flag. 0 means "NoGames = false". But it does not work.
                                                           0)  # No Plugins flag. 0 means "NoPlugins = false". But it does not work.
     EncodedLicenseString = VariantBase64Encode(EncryptBytes(0x787, LicenseString.encode())).decode()
-    with zipfile.ZipFile('static/Custom.mxtpro', 'w') as f:
+    with zipfile.ZipFile('static/public/Custom.mxtpro', 'w') as f:
         f.writestr('Pro.key', data=EncodedLicenseString)
-
-
-def help():
-    print('Usage:')
-    print('    MobaXterm-Keygen.py <UserName> <Version>')
-    print()
-    print('    <UserName>:      The Name licensed to')
-    print('    <Version>:       The Version of MobaXterm')
-    print('                     Example:    10.9')
-    print()
-
-
-if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        help()
-        exit(0)
-    else:
-        MajorVersion, MinorVersion = sys.argv[2].split('.')[0:2]
-        MajorVersion = int(MajorVersion)
-        MinorVersion = int(MinorVersion)
-        GenerateLicense(LicenseType.Professional,
-                        1,
-                        sys.argv[1],
-                        MajorVersion,
-                        MinorVersion)
-        print('[*] Success!')
-        print('[*] File generated: %s' % os.path.join(os.getcwd(), 'Custom.mxtpro'))
-        print('[*] Please move or copy the newly-generated file to MobaXterm\'s installation path.')
-        print()
-else:
-    print('[*] ERROR: Please run this script directly')

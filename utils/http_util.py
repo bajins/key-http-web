@@ -109,21 +109,20 @@ class HTTPRequest(BaseHTTPRequestHandler):
                         self.request_data[param[1]] = param[2]
             else:
                 params = body.split("&")
-                for param in params:
-                    k, v = param.split("=", 1)
-                    self.request_data[k] = v
+                if util.not_empty(params[0]):
+                    for param in params:
+                        k, v = param.split("=", 1)
+                        self.request_data[k] = v
 
     # 设置响应头
     def send_http_header(self, content_type='application/json;charset=utf-8'):
-        origin = self.headers['Origin']
         # 设置响应状态码
         self.send_response(HTTPStatus.OK)
         # 设置响应类型
         self.send_header('Content-Type', content_type)
-        self.send_header('Access-Control-Allow-Origin', origin)
+        self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
         self.send_header('Access-Control-Allow-Methods', 'GET,POST')
         self.send_header('Access-Control-Max-Age', '86400')
-        self.end_headers()
 
     # 设置响应内容
     def send_http_body(self, data):
@@ -147,15 +146,14 @@ class HTTPRequest(BaseHTTPRequestHandler):
     # 根据url路由返回请求
     def url_request(self, path):
 
-        if path.find("static") == -1:
-            file_path = STATIC_DIR + path
-        elif path.find("/static") != -1:
-            file_path = path[path.find("static"):len(path)]
+        file_path = get_file_path(path)
+        self.send_http_header(judge_type(file_path))
 
         # 如果不是静态文件
         if not os.path.isfile(file_path) and path not in main.urlpatterns:
             self.response_line = HTTPStatus.NOT_FOUND
-            self.response_head['Content-Type'] = 'text/html'
+            self.send_http_header('text/html')
+            self.end_headers()
             self.response_body = DEFAULT_ERROR_HTML.encode("utf-8")
             log_util.log_error("%s code %d, message %s", path, HTTPStatus.NOT_FOUND, '未找到')
 
@@ -163,7 +161,8 @@ class HTTPRequest(BaseHTTPRequestHandler):
         elif path in main.urlpatterns:
             # 动态调用函数并传参
             result = eval(main.urlpatterns[path])(self)
-            if result.find(".html") != -1:
+            # 如果返回的值是文件
+            if os.path.isfile(get_file_path(result)):
                 self.url_request(result)
                 return
 
@@ -174,12 +173,20 @@ class HTTPRequest(BaseHTTPRequestHandler):
             else:
                 self.send_http_header('text/html;charset=utf-8')
 
+            self.send_header('Set-Cookie', self.Cookie)
+
+            self.end_headers()
+
             self.send_http_body(result)
-            self.response_head['Set-Cookie'] = self.Cookie
         # 是静态文件
         else:
+            # if file_path.find("/public") != -1:
+            #     filename = os.path.basename(file_path)
+            #     self.send_header("Content-Disposition", "attachment; filename=" + filename)
+
+            self.end_headers()
+
             # 扩展名,只提供制定类型的静态文件
-            self.send_http_header(judge_type(file_path))
             extension_name = os.path.splitext(file_path)[1]
             extension_set = {'.css', '.html', '.js'}
             if extension_name in extension_set:
@@ -191,3 +198,12 @@ class HTTPRequest(BaseHTTPRequestHandler):
                 with open(file_path, 'rb') as fd:
                     data = fd.read()
                 self.send_http_body(data)
+
+
+def get_file_path(path):
+    if path.find(STATIC_DIR) == -1:
+        file_path = STATIC_DIR + path
+    elif path.find("/" + STATIC_DIR) != -1:
+        file_path = path[path.find(STATIC_DIR):len(path)]
+
+    return file_path
