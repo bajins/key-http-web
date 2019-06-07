@@ -77,7 +77,7 @@ function getKey() {
             url: "/getKey",
             type: "POST",
             data: {company: company, app: app, version: version},
-            contentType: "text",
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
             responseType: "blob",
             success: function (result, status, xhr) {
                 // console.log(xhr.getAllResponseHeaders());
@@ -120,6 +120,7 @@ function getKey() {
             url: "/getKey",
             type: "POST",
             data: {company: company, app: app, version: version},
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
             dataType: "text",
             success: function (result) {
                 let res = JSON.parse(result);
